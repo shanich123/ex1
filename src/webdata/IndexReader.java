@@ -85,7 +85,7 @@ public class IndexReader {
     }
 
     /**
-     * Return the number of number of tokens in the system
+     * Return the number of tokens in the system
      * (Tokens should be counted as many times as they appear)
      */
     public int getTokenSizeOfReviews() {

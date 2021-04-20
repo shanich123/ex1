@@ -2,6 +2,8 @@ package webdata;
 import java.io.*;
 import java.io.FileReader;
 import java.util.*;
+import java.util.ArrayList;
+
 
 public class SlowIndexWriter {
 
@@ -14,6 +16,7 @@ public class SlowIndexWriter {
         }
         return a.substring(0, minLength);
     }
+
     private void sort_tokens (String str[], int count){
         String temp;
         //Sorting the strings
@@ -49,49 +52,51 @@ public class SlowIndexWriter {
         if (! directory.exists()){
             directory.mkdir();
         }
+        
+        FileSaver saver = new FileSaver(dir);
         File file=new File(inputFile);    //read raw data
-        Hashtable<String, Integer> tokens = new Hashtable<String, Integer>();
-        Hashtable<Integer, String> reviews_dict = new Hashtable<Integer, String>();
-        Hashtable<Integer, String> products_ids = new Hashtable<Integer, String>();
-        int numReviews = 0;
+        Hashtable<String, Token> tokens = new Hashtable<String, Token>();
+        ArrayList<String> tokenSet = new ArrayList<String>();
+        ArrayList<Product> products = new ArrayList<Product>();
         int numTokensAll = 0;
         int numDiffTokens = 0;
-        int averageLen = 0;
-        byte[] byteArrray;
+        int numReview = 0;
         String last_product_id = "";
         try {
             FileReader fr = new FileReader(file);
             BufferedReader br = new BufferedReader(fr);
             String line;
             String curProductId = "";
-            String curHelpfulness = "";
-            String curScore = "";
-            Integer curLength = 0;
+            int numMaxReviewId = 0;
+            int curHelpfulnessNumerator = 0;
+            int curHelpfulnessDenominator = 0;
+            int curScore = 0;
+            int curLength = 0;
             while ((line = br.readLine()) != null) {
                 if (line.isEmpty()){
-                    numReviews += 1;
-                    String finalS = curProductId + "&" + curHelpfulness + "&" + curScore + "&" + curLength.toString();
-                    reviews_dict.put(numDiffTokens, finalS);
+                    saver.saveReview(curScore, curHelpfulnessNumerator, curHelpfulnessDenominator, curLength);
                 }
                 else {
+                    String[] arrOfStr = line.split(": ", 2);
                     if (line.startsWith("product/productId:")){
-                        String[] arrOfStr = line.split(":", 2);
                         curProductId = arrOfStr[1];
+                        numReview += 1;
                         if (!last_product_id.equals(curProductId)){
-                            byteArrray = curProductId.getBytes();
                             last_product_id = curProductId;
+                            numMaxReviewId = numReview;
+                            products.add(new Product(curProductId, numReview));
                         }
                     }
                     else if (line.startsWith("review/helpfulness:")){
-                        String[] arrOfStr = line.split(":", 2);
-                        curHelpfulness = arrOfStr[1];
+                        String[] curHelpfulness = arrOfStr[1].split("/", 2);
+                        curHelpfulnessNumerator = Integer.parseInt(curHelpfulness[0]);
+                        curHelpfulnessDenominator = Integer.parseInt(curHelpfulness[1]);
                     }
                     else if (line.startsWith("review/score:")){
-                        String[] arrOfStr = line.split(":", 2);
-                        curScore = arrOfStr[1];
+                        double d = Double.parseDouble(arrOfStr[1]);
+                        curScore = (int) d;
                     }
                     else if (line.startsWith("review/text:")){
-                        String[] arrOfStr = line.split(":", 2);
                         String review = arrOfStr[1];
                         String[] words = review.split("[^a-zA-Z0-9']+", 0);
                         curLength = words.length;
@@ -99,14 +104,16 @@ public class SlowIndexWriter {
                         for (String word : words) {
                             if (!word.isEmpty()) {
                                 word = word.toLowerCase(Locale.ROOT);
-                                Integer per = tokens.get(word);
-                                if (per != null){
-                                    tokens.put(word, per+1);
-                                }
-                                else {  // if the word didnt exist in the hashtable before
+                                boolean per = tokenSet.contains(word);
+                                if (!per){  // if the word didnt exist in the hashtable before
+                                    tokenSet.add(word);
+                                    Token newT = new Token (word, 1, 1, numReview);
+                                    tokens.put(word, newT);
                                     numDiffTokens += 1;
-                                    tokens.put(word, 1);
-                                    averageLen += word.length();
+                                }
+                                else {
+                                    Token update = tokens.get(word);
+                                    update.setFrequency(numReview);
                                 }
                             }
                         }
@@ -114,25 +121,14 @@ public class SlowIndexWriter {
                 }
             }
             fr.close();    //closes the stream and release the resources
-            System.out.println("number of reviews: " + numReviews);
+            Collections.sort(tokenSet);
             System.out.println("number of tokens with repeats: " + numTokensAll);
             System.out.println("number of different tokens: " + numDiffTokens);
-            System.out.println("average token length: " + (averageLen/numDiffTokens));
-            String str[] = new String[numDiffTokens];
-            Set<String> keys1 = tokens.keySet();
-            int i = 0;
-            for(String key: keys1){
-                str[i] = key;
-                i += 1;
-            }
-            sort_tokens(str, numDiffTokens);
-            int averageF = 0;
-            Set<String> keys = tokens.keySet();
-            for(String key: keys){
-                averageF += tokens.get(key);
-//                System.out.println("Value of "+key+" is: "+tokens.get(key));
-            }
-            System.out.println("average token frequency: " + (averageF/numDiffTokens));
+            // calls to FileSaver
+            saver.saveAllProducts(products,numMaxReviewId);
+            saver.saveAllToken(tokenSet, tokens);
+            saver.generalData(numDiffTokens, numReview);
+
         }
         catch (IOException e){
             e.printStackTrace();
