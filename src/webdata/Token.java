@@ -7,6 +7,8 @@ public class Token implements Comparable<Token> {
     private int frequency;
     private int collectionFrequency; // we assume that the number is bounded in int
     private ArrayList<Integer> invertedIndex;
+    private int prefix_size;
+    private int concatenated_list_cursor, inverted_list_cursor;
 
     public Token(String word, int tokenFrequency, int tokenCollectionFrequency, int reviewId){
         this.word = word;
@@ -14,6 +16,21 @@ public class Token implements Comparable<Token> {
         this.collectionFrequency = tokenCollectionFrequency;
         this.invertedIndex = new ArrayList<Integer>();
         this.invertedIndex.add(reviewId);
+        this.prefix_size = 0;
+        this.concatenated_list_cursor = 0;
+        this.inverted_list_cursor = 0;
+    }
+
+    public void setPrefixSize(int pref) {
+        this.prefix_size = pref;
+    }
+
+    public void setConcatenatedCursor(int cursor) {
+        this.concatenated_list_cursor = cursor;
+    }
+
+    public void setInvertedCursor(int cursor) {
+        this.inverted_list_cursor = cursor;
     }
 
     public void setFrequency(int reviewId) {
@@ -38,6 +55,18 @@ public class Token implements Comparable<Token> {
 
     public ArrayList<Integer> getInvertedIndex() {
         return invertedIndex;
+    }
+
+    public int getPrefixSize() {
+        return this.prefix_size;
+    }
+
+    public int getConcatenatedCursor() {
+        return this.concatenated_list_cursor;
+    }
+
+    public int getInvertedCursor() {
+        return this.inverted_list_cursor;
     }
 
     @Override

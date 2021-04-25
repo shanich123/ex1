@@ -17,29 +17,6 @@ public class SlowIndexWriter {
         return a.substring(0, minLength);
     }
 
-    private void sort_tokens (String str[], int count){
-        String temp;
-        //Sorting the strings
-        for (int i = 0; i < count; i++)
-        {
-            for (int j = i + 1; j < count; j++) {
-                if (str[i].compareTo(str[j])>0)
-                {
-                    temp = str[i];
-                    str[i] = str[j];
-                    str[j] = temp;
-                }
-            }
-        }
-        int avarage = 0;
-        String prefix;
-        for (int i = 1; i < count; i++){
-            prefix = greatestCommonPrefix(str[i], str[i-1]);
-            avarage += prefix.length();
-        }
-        System.out.println("average prefix length: " + (avarage/count));
-    }
-
     /**
      * Given product review data, creates an on disk index
      * inputFile is the path to the file containing the review data
@@ -52,12 +29,14 @@ public class SlowIndexWriter {
         if (! directory.exists()){
             directory.mkdir();
         }
-        
+        //read raw data
         FileSaver saver = new FileSaver(dir);
-        File file=new File(inputFile);    //read raw data
+        File file=new File(inputFile);
         Hashtable<String, Token> tokens = new Hashtable<String, Token>();
         ArrayList<String> tokenSet = new ArrayList<String>();
         ArrayList<Product> products = new ArrayList<Product>();
+        ArrayList<String> productsSet = new ArrayList<String>();
+        ArrayList<Review> reviews = new ArrayList<Review>();
         int numTokensAll = 0;
         int numDiffTokens = 0;
         int numReview = 0;
@@ -67,24 +46,35 @@ public class SlowIndexWriter {
             BufferedReader br = new BufferedReader(fr);
             String line;
             String curProductId = "";
+            int curProductNum = -1;
             int numMaxReviewId = 0;
             int curHelpfulnessNumerator = 0;
             int curHelpfulnessDenominator = 0;
             int curScore = 0;
             int curLength = 0;
+            Product curP = null;
             while ((line = br.readLine()) != null) {
                 if (line.isEmpty()){
-                    saver.saveReview(curScore, curHelpfulnessNumerator, curHelpfulnessDenominator, curLength);
+//                    saver.saveReview(curScore, curHelpfulnessNumerator, curHelpfulnessDenominator, curLength);
+                    Review cur = new Review(curScore, curHelpfulnessNumerator, curHelpfulnessDenominator, curLength,
+                            curProductId);
+                    reviews.add(cur);
                 }
                 else {
                     String[] arrOfStr = line.split(": ", 2);
                     if (line.startsWith("product/productId:")){
                         curProductId = arrOfStr[1];
                         numReview += 1;
+                        curProductNum += 1;
                         if (!last_product_id.equals(curProductId)){
                             last_product_id = curProductId;
                             numMaxReviewId = numReview;
-                            products.add(new Product(curProductId, numReview));
+                            if (!products.isEmpty()){
+                                curP.setLastReviewId(numReview-1);
+                            }
+                            curP = new Product(curProductId, numReview);
+                            products.add(curP);
+                            productsSet.add(curProductId);
                         }
                     }
                     else if (line.startsWith("review/helpfulness:")){
@@ -121,14 +111,28 @@ public class SlowIndexWriter {
                 }
             }
             fr.close();    //closes the stream and release the resources
+
+
             Collections.sort(tokenSet);
+            Collections.sort(products);
+            Collections.sort(productsSet);
+            // TODO: remove prints
             System.out.println("number of tokens with repeats: " + numTokensAll);
             System.out.println("number of different tokens: " + numDiffTokens);
+            System.out.println("number of reviews: " + numReview);
             // calls to FileSaver
-            saver.saveAllProducts(products,numMaxReviewId);
-            saver.saveAllToken(tokenSet, tokens);
-            saver.generalData(numDiffTokens, numReview);
 
+            for (int i=0; i<=reviews.size()-1; i++){
+                Review cur = reviews.get(i);
+                String curPr = cur.getProductID();
+                int index = productsSet.indexOf(curPr);
+                cur.setProductNum(index);
+            }
+            saver.saveAllReviews(reviews, products.size()-1);
+            saver.saveAllProducts(products, numMaxReviewId);
+            saver.generalData(numDiffTokens, numReview);
+//            saver.saveAllTokens(tokenSet, tokens);
+            saver.endSaving();
         }
         catch (IOException e){
             e.printStackTrace();
