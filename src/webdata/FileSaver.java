@@ -16,7 +16,7 @@ public class FileSaver {
             concatenated_list, general_data, product_ids;
     private BufferedOutputStream token_dict;
     private ByteAmount byte_amount;
-    private int num_bytesReviews, num_bytesProducts;
+    private int num_bytesReviews, num_bytesProducts, numOfProducts;
 
     public static String REVIEW = "/review_file";
     public static String INVERTED = "/inverted_index";
@@ -112,18 +112,19 @@ public class FileSaver {
             byte[] byteArrray = productId.getBytes();
             this.product_ids.write(byteArrray);
             byte[] review_id = generalFunctions.integerToBytes(firstReviewId, num_bytesR);
-            this.product_review.write(review_id);
+            this.product_ids.write(review_id);
             byte[] product_id = generalFunctions.integerToBytes(lastReviewId, num_bytesR);
-            this.product_review.write(product_id);
+            this.product_ids.write(product_id);
         }
         catch (IOException e){
             e.printStackTrace();
         }
     }
 
-    public void saveAllProducts (ArrayList<Product> products, int numMaxReviewId){
+    public void saveAllProducts (ArrayList<Product> products, int numReviews){
         // save all products dict decide how many bytes for firstReviewId according to numMaxReviewId and num products
-        this.num_bytesReviews = generalFunctions.calculateNumBytes(numMaxReviewId);
+        this.num_bytesReviews = generalFunctions.calculateNumBytes(numReviews);
+        this.numOfProducts =  products.size()-1;
         for (int i = 0; i <= products.size()-1; i++){
             Product cur = products.get(i);
             saveProduct(cur.getProductId(), cur.getFirstReviewId(), cur.getLastReviewId(), num_bytesReviews);
@@ -140,11 +141,13 @@ public class FileSaver {
         byte [] numBytes = ByteBuffer.allocate(4).putInt(numberOfReviews).array();
         byte [] n1 = generalFunctions.integerToBytes(this.num_bytesProducts, 1);
         byte [] n2 = generalFunctions.integerToBytes(this.num_bytesReviews, 1);
+        byte [] n3 = ByteBuffer.allocate(4).putInt(this.numOfProducts).array();;
         try{
             this.general_data.write(sizeBytes,0,4);
             this.general_data.write(numBytes,0,4);
             this.general_data.write(n1);
             this.general_data.write(n2);
+            this.general_data.write(n3,0,4);
         }
         catch (IOException e){
             e.printStackTrace();

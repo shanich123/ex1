@@ -3,13 +3,14 @@ package webdata;
 public class generalFunctions {
 
     public static int calculateNumBytes (int num){
-        int num_bytes = 0;
+        int count = 0;
         while (num > 0) {
-            num_bytes += 1;
-            num = num >> 1;
+            num = num >> 8;
+            count++;
         }
-        num_bytes = (int) Math.ceil(num_bytes/8);
-        return num_bytes;
+        System.out.println("num_bytes");
+        System.out.println(count);
+        return count;
     }
 
     public static int byteToInt(byte[] bytes, int length) {

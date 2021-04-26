@@ -22,7 +22,6 @@ public class IndexReader {
 
     public static String REVIEW = "/review_file";
     public static String INVERTED = "/inverted_index";
-    public static String PRODUCT_REVIEW = "/product_review";
     public static String PRODUCT_IDS= "/product_review";
     public static String REVIEW_PRODUCT = "/review_product";
     public static String CONCATENATED = "/concatenated_list";
@@ -39,7 +38,6 @@ public class IndexReader {
         try {
             this.reviews = new RandomAccessFile(dir+REVIEW, "r");
             this.inverted_index = new RandomAccessFile(dir+INVERTED, "r");
-//            this.product_review = new RandomAccessFile(dir+PRODUCT_REVIEW, "r");
             this.review_product = new RandomAccessFile(dir+REVIEW_PRODUCT, "r");
             this.concatenated_list = new RandomAccessFile(dir+CONCATENATED, "r");
             this.general_data = new RandomAccessFile(dir+GENERAL, "r");
@@ -67,6 +65,8 @@ public class IndexReader {
             this.general_data.seek(9);
             r = this.general_data.read(bytes1,0,1);
             this.num_bytesReviews = generalFunctions.byteToInt(bytes1, 1);
+            r = this.general_data.read(bytes,0,4);
+            this.numOfProducts = ByteBuffer.wrap(bytes).getInt();
             this.general_data.close();
         }
         catch (IOException e){
@@ -268,7 +268,7 @@ public class IndexReader {
             this.product_ids.seek(id*(10+2*this.num_bytesReviews) + 10);
             int r = this.product_ids.read(bytes,0,this.num_bytesReviews);
             Integer first = generalFunctions.byteToInt(bytes, this.num_bytesReviews);
-            this.product_ids.seek(id*(10+2*this.num_bytesReviews) + 10+this.num_bytesReviews);
+            this.product_ids.seek(id*(10+2*this.num_bytesReviews) + 10 + this.num_bytesReviews);
             r = this.product_ids.read(bytes,0,this.num_bytesReviews);
             Integer last = generalFunctions.byteToInt(bytes, this.num_bytesReviews);
             webEnum returnV = new webEnum(first, last);

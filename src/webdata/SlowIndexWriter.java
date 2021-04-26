@@ -111,7 +111,7 @@ public class SlowIndexWriter {
                 }
             }
             fr.close();    //closes the stream and release the resources
-
+            curP.setLastReviewId(numReview);
 
             Collections.sort(tokenSet);
             Collections.sort(products);
@@ -129,7 +129,7 @@ public class SlowIndexWriter {
                 cur.setProductNum(index);
             }
             saver.saveAllReviews(reviews, products.size()-1);
-            saver.saveAllProducts(products, numMaxReviewId);
+            saver.saveAllProducts(products, reviews.size());
             saver.generalData(numDiffTokens, numReview);
 //            saver.saveAllTokens(tokenSet, tokens);
             saver.endSaving();

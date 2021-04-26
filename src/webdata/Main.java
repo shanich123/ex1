@@ -32,9 +32,13 @@ public class Main {
         a.slowWrite("1000.txt", "try");
 
         IndexReader b = new IndexReader("try");
-        System.out.println(b.getProductId(1));
-        System.out.println(b.getReviewScore(1));
-        System.out.println(b.getReviewHelpfulnessDenominator(1));
+        System.out.println(b.getProductId(2));
+        System.out.println(b.getReviewScore(2));
+        System.out.println(b.getReviewHelpfulnessDenominator(2));
+        System.out.println(b.getReviewHelpfulnessNumerator(2));
+        System.out.println(b.getReviewLength(2));
+        Enumeration<Integer> t = b.getProductReviews("B006F2NYI2");
+        System.out.println(b.getProductReviews("B006F2NYI2"));
 //        System.out.println(b.getTokenSizeOfReviews());
 //        System.out.println();
 //        int r1 = b.getReviewLength(1);
