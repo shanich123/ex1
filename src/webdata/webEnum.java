@@ -28,6 +28,14 @@ public class webEnum implements Enumeration<Integer> {
         }
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "webEnum{" +
+                "first=" + first +
+                ", last=" + last +
+                '}';
+    }
 }
 
 
