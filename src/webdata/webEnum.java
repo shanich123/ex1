@@ -35,6 +35,7 @@ public class webEnum implements Enumeration<Integer> {
                 "first=" + first +
                 ", last=" + last +
                 '}';
+
     }
 }
 
