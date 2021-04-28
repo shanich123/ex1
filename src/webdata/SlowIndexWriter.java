@@ -61,8 +61,9 @@ public class SlowIndexWriter {
                     reviews.add(cur);
                 }
                 else {
-                    String[] arrOfStr = line.split(": ", 2);
+
                     if (line.startsWith("product/productId:")){
+                        String[] arrOfStr = line.split(": ", 2);
                         curProductId = arrOfStr[1];
                         numReview += 1;
                         curProductNum += 1;
@@ -78,22 +79,25 @@ public class SlowIndexWriter {
                         }
                     }
                     else if (line.startsWith("review/helpfulness:")){
+                        String[] arrOfStr = line.split(": ", 2);
                         String[] curHelpfulness = arrOfStr[1].split("/", 2);
                         curHelpfulnessNumerator = Integer.parseInt(curHelpfulness[0]);
                         curHelpfulnessDenominator = Integer.parseInt(curHelpfulness[1]);
                     }
                     else if (line.startsWith("review/score:")){
+                        String[] arrOfStr = line.split(": ", 2);
                         double d = Double.parseDouble(arrOfStr[1]);
                         curScore = (int) d;
                     }
                     else if (line.startsWith("review/text:")){
-                        String review = arrOfStr[1];
-                        String[] words = review.split("[^a-zA-Z0-9']+", 0);
+                        line = line.replace("review/text: ", "");
+                        String review = line.toLowerCase(Locale.ROOT);
+                        String[] words = review.split("[^a-z0-9]", 0);
                         curLength = words.length;
                         numTokensAll += curLength;
                         for (String word : words) {
                             if (!word.isEmpty()) {
-                                word = word.toLowerCase(Locale.ROOT);
+//                                word = word.toLowerCase(Locale.ROOT);
                                 boolean per = tokenSet.contains(word);
                                 if (!per){  // if the word didnt exist in the hashtable before
                                     tokenSet.add(word);

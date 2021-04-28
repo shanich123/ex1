@@ -55,10 +55,10 @@ public class Main {
 
 
     public static void main(String[] args) {
-//        SlowIndexWriter a = new SlowIndexWriter();
-//        a.slowWrite("1000.txt", "try");
-        checkReviews ();
-        checkProduct ();
+        SlowIndexWriter a = new SlowIndexWriter();
+        a.slowWrite("1000.txt", "try1");
+//        checkReviews ();
+//        checkProduct ();
 //        Enumeration<Integer> t = b.getProductReviews("B006F2NYI2");
 //        System.out.println(b.getProductReviews("B006F2NYI2"));
 //        System.out.println(b.getTokenSizeOfReviews());
