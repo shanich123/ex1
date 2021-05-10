@@ -5,17 +5,8 @@ import java.util.*;
 import java.util.ArrayList;
 
 
-public class SlowIndexWriter {
 
-    private String greatestCommonPrefix(String a, String b) {
-        int minLength = Math.min(a.length(), b.length());
-        for (int i = 0; i < minLength; i++) {
-            if (a.charAt(i) != b.charAt(i)) {
-                return a.substring(0, i);
-            }
-        }
-        return a.substring(0, minLength);
-    }
+public class SlowIndexWriter {
 
     /**
      * Given product review data, creates an on disk index
@@ -46,8 +37,6 @@ public class SlowIndexWriter {
             BufferedReader br = new BufferedReader(fr);
             String line;
             String curProductId = "";
-            int curProductNum = -1;
-            int numMaxReviewId = 0;
             int curHelpfulnessNumerator = 0;
             int curHelpfulnessDenominator = 0;
             int curScore = 0;
@@ -66,10 +55,8 @@ public class SlowIndexWriter {
                         String[] arrOfStr = line.split(": ", 2);
                         curProductId = arrOfStr[1];
                         numReview += 1;
-                        curProductNum += 1;
                         if (!last_product_id.equals(curProductId)){
                             last_product_id = curProductId;
-                            numMaxReviewId = numReview;
                             if (!products.isEmpty()){
                                 curP.setLastReviewId(numReview-1);
                             }
@@ -92,16 +79,16 @@ public class SlowIndexWriter {
                     else if (line.startsWith("review/text:")){
                         line = line.replace("review/text: ", "");
                         String review = line.toLowerCase(Locale.ROOT);
-                        String[] words = review.split("[^a-z0-9]", 0);
+                        String[] words = review.split("[^a-z0-9]+", 0);
                         curLength = words.length;
                         numTokensAll += curLength;
                         for (String word : words) {
                             if (!word.isEmpty()) {
-//                                word = word.toLowerCase(Locale.ROOT);
+                                //word = word.toLowerCase(Locale.ROOT);
                                 boolean per = tokenSet.contains(word);
                                 if (!per){  // if the word didnt exist in the hashtable before
                                     tokenSet.add(word);
-                                    Token newT = new Token (word, 1, 1, numReview);
+                                    Token newT = new Token (word, numReview);
                                     tokens.put(word, newT);
                                     numDiffTokens += 1;
                                 }
@@ -120,11 +107,6 @@ public class SlowIndexWriter {
             Collections.sort(tokenSet);
             Collections.sort(products);
             Collections.sort(productsSet);
-            // TODO: remove prints
-            System.out.println("number of tokens with repeats: " + numTokensAll);
-            System.out.println("number of different tokens: " + numDiffTokens);
-            System.out.println("number of reviews: " + numReview);
-            // calls to FileSaver
 
             for (int i=0; i<=reviews.size()-1; i++){
                 Review cur = reviews.get(i);
@@ -132,10 +114,12 @@ public class SlowIndexWriter {
                 int index = productsSet.indexOf(curPr);
                 cur.setProductNum(index);
             }
-            saver.saveAllReviews(reviews, products.size()-1);
-            saver.saveAllProducts(products, reviews.size());
-            saver.generalData(numDiffTokens, numReview);
-//            saver.saveAllTokens(tokenSet, tokens);
+            // calls to FileSaver
+            saver.saveGeneralData(numTokensAll, numReview);
+            saver.saveAllProducts(products);
+            saver.saveAllReviews(reviews);
+            saver.saveAllTokens(tokenSet, tokens);
+            saver.writeByteAmountAndMore();
             saver.endSaving();
         }
         catch (IOException e){

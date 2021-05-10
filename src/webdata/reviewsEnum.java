@@ -2,11 +2,14 @@ package webdata;
 
 import java.util.Enumeration;
 
-public class webEnum implements Enumeration<Integer> {
+/**
+ * This class is an enumerator that iterates over the numbers from first to last (including).
+ */
+public class reviewsEnum implements Enumeration<Integer> {
 
     private Integer first, last;
 
-    public webEnum (int first, int last){
+    public reviewsEnum (int first, int last){
         this.first = first;
         this.last = last;
     }
@@ -27,15 +30,6 @@ public class webEnum implements Enumeration<Integer> {
             return toReturn;
         }
         return null;
-    }
-
-    @Override
-    public String toString() {
-        return "webEnum{" +
-                "first=" + first +
-                ", last=" + last +
-                '}';
-
     }
 }
 

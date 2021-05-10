@@ -5,7 +5,7 @@ review/helpfulness: 1/1
 review/score: 5.0
 review/time: 1303862400
 review/summary: Good Quality Dog Food
-review/text: I have bought several of the Vitality canned dog food products and have found them all to be of good quality. The product looks more like a stew than a processed meat and it smells better. My Labrador is finicky and she appreciates this product better than  most.
+review/text: This is only for Julie Strain fans. It's a collection of her photos -- about 80 pages worth with a nice section of paintings by Olivia.If you're looking for heavy literary content, this isn't the place to find it -- there's only about 2 pages with text and everything else is photos.Bottom line: if you only want one book, the Six Foot One ... is probably a better choice, however, if you like Julie like I like Julie, you won't go wrong on this one either.
 
 product/productId: B00813GRG4
 review/userId: A1D87F6ZCVE5NK
@@ -446,7 +446,7 @@ review/helpfulness: 0/1
 review/score: 3.0
 review/time: 1334016000
 review/summary: Same stuff
-review/text: This is the same stuff you can buy at the big box stores.  There is nothing healthy about it.  It is just carbs and sugars.  Save your money and get something that at least has some taste.
+review/text: This is only for Julie Strain fans. It's a collection of her photos -- about 80 pages worth with a nice section of paintings by Olivia.If you're looking for heavy literary content, this isn't the place to find it -- there's only about 2 pages with text and everything else is photos.Bottom line: if you only want one book, the Six Foot One ... is probably a better choice, however, if you like Julie like I like Julie, you won't go wrong on this one either.
 
 product/productId: B001EO5QW8
 review/userId: A108P30XVUFKXY
@@ -806,7 +806,7 @@ review/helpfulness: 0/0
 review/score: 5.0
 review/time: 1347408000
 review/summary: Great Food
-review/text: Great food! I love the idea of one food for all ages & breeds. Ît's a real convenience as well as a really good product.  My 3 dogs eat less, have almost no gas, their poop is regular and a perfect consistency, what else can a mom ask for!!
+review/text: Great food! I love the idea of one food for all ages & breeds. ï¿½t's a real convenience as well as a really good product.  My 3 dogs eat less, have almost no gas, their poop is regular and a perfect consistency, what else can a mom ask for!!
 
 product/productId: B0019CW0HE
 review/userId: A1OGD72Y2Y26CF

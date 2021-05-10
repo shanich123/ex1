@@ -9,7 +9,7 @@ import java.util.Random;
 public class Main {
 
 
-    public static  void checkBytes (){
+    public static  void checkBytes100 (){
         int i = 112;
         byte[] in4 = generalFunctions.integerToBytes(i,4);
         System.out.println(in4.length);
@@ -26,7 +26,7 @@ public class Main {
         System.out.println(generalFunctions.byteToInt(in1, 1));
     }
 
-    public static void checkReviews (){
+    public static void checkReviews100 (){
         IndexReader b = new IndexReader("try");
 
         System.out.println(b.getProductId(0) == null);
@@ -46,38 +46,18 @@ public class Main {
         System.out.println(b.getReviewLength(1000) == 102);
     }
 
-    public static void checkProduct (){
+    public static void checkProduct100 (){
         IndexReader b = new IndexReader("try");
         Enumeration<Integer> t = b.getProductReviews("B006F2NYI2");
         System.out.println(b.getProductReviews("B006F2NYI2").toString().compareTo("webEnum{first=988, last=1000}") == 0);
         System.out.println(b.getProductReviews("B006K2ZZ7K").toString().compareTo("webEnum{first=5, last=8}") == 0);
     }
 
-
     public static void main(String[] args) {
+
         SlowIndexWriter a = new SlowIndexWriter();
-        a.slowWrite("1000.txt", "try1");
-//        checkReviews ();
-//        checkProduct ();
-//        Enumeration<Integer> t = b.getProductReviews("B006F2NYI2");
-//        System.out.println(b.getProductReviews("B006F2NYI2"));
-//        System.out.println(b.getTokenSizeOfReviews());
-//        System.out.println();
-//        int r1 = b.getReviewLength(1);
-//        System.out.println(r1);
-//        int r2 = b.getReviewLength(1000);
-//        System.out.println(r2);
-//        int r3 = b.getReviewScore(1);
-//        System.out.println(r3);
-//        int r4 = b.getReviewScore(1000);
-//        System.out.println(r4);
-////        a.removeIndex("try");
-//        IndexReader b = new IndexReader("try");
-//        int r2 = b.getTokenSizeOfReviews();
-//        int r1 = b.getNumberOfReviews();
-//
-//
-//        System.out.println("getNumberOfReviews " + r1);
-//        System.out.println("getTokenSizeOfReviews " + r2);
+        a.slowWrite("1000.txt", "C:\\IndexDirectory");
+//        checkReviews100 ();
+//        checkProduct100 ();
     }
 }

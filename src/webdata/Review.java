@@ -5,7 +5,8 @@ public class Review {
     private int score, helpfulnessNumerator, helpfulnessDenominator, reviewLength, productNum;
     private String productID;
 
-    public Review(int score, int helpfulnessNumerator, int helpfulnessDenominator, int reviewLength, String curProductId){
+    public Review(int score, int helpfulnessNumerator, int helpfulnessDenominator, int reviewLength,
+                  String curProductId){
         this.productID = curProductId;
         this.score = score;
         this.helpfulnessNumerator = helpfulnessNumerator;
