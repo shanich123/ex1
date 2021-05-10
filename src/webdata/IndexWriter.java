@@ -1,0 +1,33 @@
+package webdata;
+
+import java.io.File;
+
+public class IndexWriter {
+
+    /**
+     * Given product review data, creates an on disk index
+     * inputFile is the path to the file containing the review data
+     * dir is the directory in which all index files will be created
+     * if the directory does not exist, it should be created
+     */
+    public void write(String inputFile, String dir) {}
+
+
+    /**
+     * Delete all index files by removing the given directory
+     */
+    public void removeIndex(String dir) {
+        File directoryToBeDeleted = new File(dir);
+        this.deleteDirectory(directoryToBeDeleted);
+    }
+
+    private boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return directoryToBeDeleted.delete();
+    }
+}
