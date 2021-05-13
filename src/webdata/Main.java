@@ -53,11 +53,11 @@ public class Main {
         System.out.println(b.getProductReviews("B006K2ZZ7K").toString().compareTo("webEnum{first=5, last=8}") == 0);
     }
 
-    public static void main(String[] args) {
-
-        SlowIndexWriter a = new SlowIndexWriter();
-        a.slowWrite("1000.txt", "C:\\IndexDirectory");
-//        checkReviews100 ();
-//        checkProduct100 ();
-    }
+//    public static void main(String[] args) {
+//
+//        SlowIndexWriter a = new SlowIndexWriter();
+//        a.slowWrite("1000.txt", "C:\\IndexDirectory");
+////        checkReviews100 ();
+////        checkProduct100 ();
+//    }
 }
