@@ -10,9 +10,10 @@ import java.lang.Math;
 public class FileSaver {
 
     private BufferedOutputStream inverted_index, product_review, review_product,
-            concatenated_list, general_data, product_ids, token_dict;
+            concatenated_list, general_data, product_ids, token_dict, token_review;
     private ByteAmount byte_amount;
     private int numOfProducts, numOfTokens;
+    private int numOfReviewsB, numOfTokensB;
 
     public static String INVERTED = "/inverted_index";
     public static String PRODUCT_REVIEW = "/product_review";
@@ -21,6 +22,7 @@ public class FileSaver {
     public static String CONCATENATED = "/concatenated_list";
     public static String GENERAL = "/general_data";
     public static String TOKENS = "/token_dict";
+    public static String TOKEN_REVIEW = "/token_review";
 
     public FileSaver(String dir){
         // open files to save in
@@ -34,6 +36,9 @@ public class FileSaver {
 
             FileOutputStream product_ids_file = new FileOutputStream(dir+PRODUCT_IDS);
             this.product_ids = new BufferedOutputStream(product_ids_file);
+
+            FileOutputStream token_review_file = new FileOutputStream(dir+TOKEN_REVIEW);
+            this.token_review = new BufferedOutputStream(token_review_file);
 
             FileOutputStream review_product_file = new FileOutputStream(dir+REVIEW_PRODUCT);
             this.review_product = new BufferedOutputStream(review_product_file);
@@ -81,17 +86,47 @@ public class FileSaver {
             this.general_data.close();
             this.token_dict.close();
             this.product_ids.close();
+
         }
         catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void saveReview (int score, int helpfulnessNumerator, int helpfulnessDenominator, int ReviewLength,
+    public void saveTokenReview (int token, int review){
+        try{
+            byte[] tokenB = generalFunctions.integerToBytes(token, this.numOfTokensB);
+            this.token_review.write(tokenB);
+            byte[] reviewB = generalFunctions.integerToBytes(review, this.byte_amount.getPerFrequency());
+            this.token_review.write(reviewB);
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void endTokenReview(int numOfTokens){
+        this.numOfTokens = numOfTokens;
+        this.numOfTokensB = generalFunctions.calculateNumBytes(numOfTokens);
+        try {
+            this.token_review.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void update_byteAmountProducts (int numOfProducts){
+        this.numOfProducts = numOfProducts;
+        this.byte_amount.setPerProductNum(generalFunctions.calculateNumBytes(this.numOfProducts));
+    }
+
+    public void saveReview (int score, int helpfulnessNumerator, int helpfulnessDenominator, int ReviewLength,
                              int productNum){
         // review saved while reading the input file
         //  score: 1 byte, helpfulnessNumerator: 1 byte, helpfulnessDenominator: 1 byte, ReviewLength: 2 byte,
         //  productNum: number of bytes depends on data.
+
         try{
             byte[] scoreB = generalFunctions.integerToBytes(score, 1);
             this.review_product.write(scoreB);
@@ -110,7 +145,6 @@ public class FileSaver {
     }
 
     public void saveAllReviews (ArrayList<Review> allReviews){
-        this.byte_amount.setPerProductNum(generalFunctions.calculateNumBytes(this.numOfProducts));
         for (int i = 0; i <= allReviews.size()-1; i++){
             Review cur = allReviews.get(i);
             saveReview(cur.getScore(), cur.getHelpfulnessNumerator(), cur.getHelpfulnessDenominator(),
@@ -184,7 +218,7 @@ public class FileSaver {
         return substr_len;
     }
 
-    // Writes the given number to the inverted-index file, in the length-precoded varint method.
+    // Writes the given number to the inverted-index file, in the length-pre-coded variant method.
     private int writeNumToInvertedList(int num) {
         String bits = Integer.toBinaryString(num);
         int len = bits.length() + 2;
@@ -226,7 +260,7 @@ public class FileSaver {
     }
 
     public void saveAllTokens (ArrayList<String> tokenSet, Hashtable<String, Token> tokens){
-        this.numOfTokens = tokens.size();
+
 
         // writes to the concatenated-list and the inverted-index, and for each token - saves pointers
         // to those files, and saves size of common prefix with the previous token.

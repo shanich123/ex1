@@ -53,11 +53,42 @@ public class Main {
         System.out.println(b.getProductReviews("B006K2ZZ7K").toString().compareTo("webEnum{first=5, last=8}") == 0);
     }
 
-//    public static void main(String[] args) {
-//
-//        SlowIndexWriter a = new SlowIndexWriter();
-//        a.slowWrite("1000.txt", "C:\\IndexDirectory");
-////        checkReviews100 ();
-////        checkProduct100 ();
-//    }
+    public static void runtimes (IndexReader r, IndexWriter a){
+        long start = System.currentTimeMillis();
+        for (int i = 1; i <= 100 ; i++) {
+            r.getReviewsWithToken("a");
+        }
+        long end = System.currentTimeMillis();
+        long elapsedTime1 = end - start;
+        System.out.println(elapsedTime1);
+        start = System.currentTimeMillis();
+        for (int i = 1; i <= 100 ; i++) {
+            r.getTokenFrequency("a");
+        }
+        end = System.currentTimeMillis();
+        long elapsedTime2 = end - start;
+        System.out.println(elapsedTime2);
+    }
+
+
+    public static void main(String[] args) {
+
+        IndexWriter a = new IndexWriter();
+        a.write("ex1_test.txt", "test");
+        IndexReader b = new IndexReader("test");
+
+        for (int i = 1; i < 10 ; i++) {
+            System.out.println("num " +i);
+            System.out.println("score " + b.getReviewScore(i));
+            System.out.println("product " + b.getProductId(i));
+            System.out.println("num " + b.getReviewHelpfulnessNumerator(i));
+            System.out.println("denum " + b.getReviewHelpfulnessDenominator(i));
+            System.out.println("len " + b.getReviewLength(i));
+//            System.out.println("h_num " + b.getReviewHelpfulnessNumerator(i));
+            System.out.println("**********************");
+        }
+
+//        checkReviews100 ();
+//        checkProduct100 ();
+    }
 }

@@ -8,8 +8,6 @@ public class generalFunctions {
             num = num >> 8;
             count++;
         }
-        System.out.println("num_bytes");
-        System.out.println(count);
         return count;
     }
 

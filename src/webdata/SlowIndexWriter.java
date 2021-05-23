@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.ArrayList;
 
 
-
 public class SlowIndexWriter {
 
     /**
@@ -43,14 +42,7 @@ public class SlowIndexWriter {
             int curLength = 0;
             Product curP = null;
             while ((line = br.readLine()) != null) {
-                if (line.isEmpty()){
-//                    saver.saveReview(curScore, curHelpfulnessNumerator, curHelpfulnessDenominator, curLength);
-                    Review cur = new Review(curScore, curHelpfulnessNumerator, curHelpfulnessDenominator, curLength,
-                            curProductId);
-                    reviews.add(cur);
-                }
-                else {
-
+                if (! line.isEmpty()) {
                     if (line.startsWith("product/productId:")){
                         String[] arrOfStr = line.split(": ", 2);
                         curProductId = arrOfStr[1];
@@ -98,6 +90,10 @@ public class SlowIndexWriter {
                                 }
                             }
                         }
+                        // save review
+                        Review cur = new Review(curScore, curHelpfulnessNumerator, curHelpfulnessDenominator, curLength,
+                                curProductId);
+                        reviews.add(cur);
                     }
                 }
             }
