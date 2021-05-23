@@ -55,15 +55,20 @@ public class Main {
 
     public static void runtimes (IndexReader r, IndexWriter a){
         long start = System.currentTimeMillis();
+        ArrayList<String> tokens = a.getTokenSet();
         for (int i = 1; i <= 100 ; i++) {
-            r.getReviewsWithToken("a");
+            int index = (int)(Math.random() * tokens.size());
+            String ask = tokens.get(index);
+            r.getReviewsWithToken(ask);
         }
         long end = System.currentTimeMillis();
         long elapsedTime1 = end - start;
         System.out.println(elapsedTime1);
         start = System.currentTimeMillis();
         for (int i = 1; i <= 100 ; i++) {
-            r.getTokenFrequency("a");
+            int index = (int)(Math.random() * tokens.size());
+            String ask = tokens.get(index);
+            r.getTokenFrequency(ask);
         }
         end = System.currentTimeMillis();
         long elapsedTime2 = end - start;
