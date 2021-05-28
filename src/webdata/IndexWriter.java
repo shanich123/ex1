@@ -25,17 +25,16 @@ public class IndexWriter {
     private void second_read (String inputFile, FileSaver saver){
         File file = new File(inputFile);
         int numReview = 0;
-        String last_product_id = "";
+        String line, curProductId;
+        int curHelpfulnessNumerator = 0;
+        int curHelpfulnessDenominator = 0;
+        int curScore = 0;
+        int curLength;
+        int curP = 0;
         try {
             FileReader fr = new FileReader(file);
             BufferedReader br = new BufferedReader(fr);
-            String line;
-            String curProductId = "";
-            int curHelpfulnessNumerator = 0;
-            int curHelpfulnessDenominator = 0;
-            int curScore = 0;
-            int curLength = 0;
-            int curP = 0;
+            saver.openTokenReviewFile();
             while ((line = br.readLine()) != null) {
                 if (! line.isEmpty()) {
 
@@ -73,10 +72,11 @@ public class IndexWriter {
                 }
             }
             fr.close();    //closes the stream and release the resources
-            saver.endTokenReview(this.tokenSet.size());
-            // TODO: call token dictionary saver
-            // tokensSet, numBytesperToken, numBytesperReview
-            saver.endSaving();
+            saver.closeTokenReviewFile();
+            saver.orderTokenReview();
+            saver.writeTokensNew(tokenSet);
+            saver.writeByteAmountAndMore();
+            //saver.endSaving();
         }
         catch (IOException e){
             e.printStackTrace();
@@ -91,13 +91,13 @@ public class IndexWriter {
         this.productsSet = new ArrayList<String>();
         int numTokensAll = 0;
         int numReview = 0;
+        int tokenTotalLen = 0;
+        Product curP = null;
+        String line, curProductId;
         String last_product_id = "";
         try {
             FileReader fr = new FileReader(file);
             BufferedReader br = new BufferedReader(fr);
-            String line;
-            String curProductId = "";
-            Product curP = null;
             while ((line = br.readLine()) != null) {
                 if (! line.isEmpty()) {
                     if (line.startsWith("product/productId:")){
@@ -124,6 +124,7 @@ public class IndexWriter {
                                 if (!per){  // if the word didnt exist in the hashtable before
                                     this.tokenSet.add(word);
                                     numTokensAll += 1;
+                                    tokenTotalLen += word.length();
                                 }
                             }
                         }
@@ -140,8 +141,7 @@ public class IndexWriter {
             // calls to FileSaver
             saver.saveGeneralData(numTokensAll, numReview);
             saver.saveAllProducts(products);
-            saver.update_byteAmountProducts(numReview);
-            saver.writeByteAmountAndMore();
+            saver.updateByteAmountParameters(tokenSet.size(), tokenTotalLen);
 
         }
         catch (IOException e){
@@ -163,7 +163,7 @@ public class IndexWriter {
         }
         FileSaver saver = new FileSaver(dir);
         first_read(inputFile, saver);
-        second_read (inputFile, saver);
+        second_read(inputFile, saver);
     }
 
 

@@ -53,6 +53,34 @@ public class Main {
         System.out.println(b.getProductReviews("B006K2ZZ7K").toString().compareTo("webEnum{first=5, last=8}") == 0);
     }
 
+    private static void printReviewData(IndexReader b, int reviewId){
+        System.out.println("data for review: " + reviewId);
+        System.out.println("score: " + b.getReviewScore(reviewId));
+        System.out.println("helpfulness numerator: " + b.getReviewHelpfulnessNumerator(reviewId));
+        System.out.println("helpfulness denominator: " + b.getReviewHelpfulnessDenominator(reviewId));
+        System.out.println("length: " + b.getReviewLength(reviewId));
+        System.out.println("product id: " + b.getProductId(reviewId));
+    }
+
+    private static void printProductData(IndexReader b, String productId) {
+        System.out.println("reviews for product: " + productId);
+        Enumeration<Integer> reviewEnum = b.getProductReviews(productId);
+        for (Enumeration<Integer> t = reviewEnum; t.hasMoreElements(); ) {
+            System.out.println(t.nextElement());
+        }
+    }
+
+    private static void printTokenData(IndexReader b, String token){
+        System.out.println("data for token: " + token);
+        System.out.println("frequency: " + b.getTokenFrequency(token));
+        System.out.println("collection frequency: " + b.getTokenCollectionFrequency(token));
+        System.out.println("reviews,frequencies for token: " + token);
+        Enumeration<Integer> tokenEnum = b.getReviewsWithToken(token);
+        for (Enumeration<Integer> t = tokenEnum; t.hasMoreElements(); ) {
+            System.out.println(t.nextElement());
+        }
+    }
+
     public static void runtimes (IndexReader r, IndexWriter a){
         long start = System.currentTimeMillis();
         ArrayList<String> tokens = a.getTokenSet();
@@ -92,6 +120,37 @@ public class Main {
 //            System.out.println("h_num " + b.getReviewHelpfulnessNumerator(i));
             System.out.println("**********************");
         }
+
+        // general data
+        System.out.println("number of tokens with repetitions: " + b.getTokenSizeOfReviews());
+        System.out.println("number of reviews: " + b.getNumberOfReviews());
+        // review data
+        printReviewData(b, 3);
+        // product data
+        printProductData(b, "B00813GRG4");
+        printProductData(b, "B006F2NYI2");
+        // token data
+        printTokenData(b, "a");
+        printTokenData(b, "the");
+        printTokenData(b, "0"); // token 1
+        printTokenData(b, "00"); // token 2
+        printTokenData(b, "000"); // token 3
+        printTokenData(b, "000kwh"); // token 4
+        printTokenData(b, "042608460503"); // token 5
+        printTokenData(b, "0472066978"); // token 6
+        printTokenData(b, "0738551856"); // token 7
+        printTokenData(b, "09"); // token 8
+        printTokenData(b, "0g"); // token 9
+        printTokenData(b, "zucchini"); // appears only in the 1000 file, last among tokens
+        printTokenData(b, "zola"); // appears only in the 1000 file, second-last among tokens
+        printTokenData(b, "affection"); // appears only in the 1000 file, first among tokens
+        printTokenData(b, "africafe"); // appears only in the 1000 file, second among tokens
+        printTokenData(b, "suckered"); // appears once in file 999
+        printTokenData(b, "peanuts");
+        printTokenData(b, "confectionery");
+        printTokenData(b, "around");
+
+        a.removeIndex("test");
 
 //        checkReviews100 ();
 //        checkProduct100 ();

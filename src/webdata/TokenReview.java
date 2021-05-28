@@ -9,6 +9,14 @@ public class TokenReview implements Comparable<TokenReview>{
         this.review = review;
     }
 
+    public int getToken() {
+        return token;
+    }
+
+    public int getReview() {
+        return review;
+    }
+
     @Override
     public int compareTo(TokenReview o) {
         if (this.token == o.token){

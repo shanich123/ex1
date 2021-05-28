@@ -6,7 +6,7 @@ package webdata;
 public class ByteAmount {
 
     private int bytes_per_frequency, bytes_per_collection_frequency, bytes_per_concatenated_ptr,
-            bytes_per_inverted_ptr, bytes_per_product_num, bytes_per_product_id;
+            bytes_per_inverted_ptr, bytes_per_token_num, bytes_per_product_num, bytes_per_product_id;
 
     public static int BYTES_PER_PRODUCT_ID = 10;
 
@@ -17,6 +17,7 @@ public class ByteAmount {
         this.bytes_per_inverted_ptr = 0;
         this.bytes_per_product_num = 0;
         this.bytes_per_product_id = BYTES_PER_PRODUCT_ID;
+        this.bytes_per_token_num = 0;
     }
 
     public ByteAmount (int bytes_per_freq, int bytes_per_collection_freq, int bytes_per_concat_ptr,
@@ -27,6 +28,7 @@ public class ByteAmount {
         this.bytes_per_inverted_ptr = bytes_per_inverted_ptr;
         this.bytes_per_product_num = bytes_per_product_num;
         this.bytes_per_product_id = bytes_per_product_id;
+        this.bytes_per_token_num = 0;
     }
 
     public void setPerFrequency(int byte_num) {
@@ -71,6 +73,14 @@ public class ByteAmount {
 
     public int getPerProductID() {
         return this.bytes_per_product_id;
+    }
+
+    public void setPerTokenNum(int token_num) {
+        this.bytes_per_token_num = token_num;
+    }
+
+    public int getPerTokenNum() {
+        return this.bytes_per_token_num;
     }
 
 }

@@ -49,4 +49,25 @@ public class generalFunctions {
             };
         }
     }
+
+    public static void integerToBytesInPlace(int number, byte[] res, int offset, int num_of_bytes){
+        if (num_of_bytes == 4){
+            res[offset] = (byte)((number >> 24) & 0xff);
+            res[offset+1] = (byte)((number >> 16) & 0xff);
+            res[offset+2] = (byte)((number >> 8) & 0xff);
+            res[offset+3] = (byte)((number >> 0) & 0xff);
+        }
+        else if (num_of_bytes == 3){
+            res[offset] = (byte)((number >> 16) & 0xff);
+            res[offset+1] = (byte)((number >> 8) & 0xff);
+            res[offset+2] = (byte)((number >> 0) & 0xff);
+        }
+        else if (num_of_bytes == 2){
+            res[offset] = (byte)((number >> 8) & 0xff);
+            res[offset+1] = (byte)((number >> 0) & 0xff);
+        }
+        else{
+            res[offset] = (byte)((number >> 0) & 0xff);
+        }
+    }
 }
