@@ -104,58 +104,62 @@ public class Main {
         IndexWriter a = new IndexWriter();
         //a.write("100.txt", "test");
         //a.write("ex1_test.txt", "test");
-        a.write("1000.txt", "test");
-        IndexReader b = new IndexReader("test");
+        long start = System.currentTimeMillis();
+        a.write("/cs/+/course/webdata/1M.txt", "test1");
+        long end = System.currentTimeMillis();
+        long elapsedTime2 = end - start;
+        System.out.println(elapsedTime2);
+//        IndexReader b = new IndexReader("test");
+//
+//        for (int i = 1; i < 4 ; i++) {
+//            System.out.println("num " +i);
+//            System.out.println("score " + b.getReviewScore(i));
+//            System.out.println("product " + b.getProductId(i));
+//            System.out.println("num " + b.getReviewHelpfulnessNumerator(i));
+//            System.out.println("denum " + b.getReviewHelpfulnessDenominator(i));
+//            System.out.println("len " + b.getReviewLength(i));
+////            System.out.println("h_num " + b.getReviewHelpfulnessNumerator(i));
+//            System.out.println("**********************");
+//        }
 
-        for (int i = 1; i < 10 ; i++) {
-            System.out.println("num " +i);
-            System.out.println("score " + b.getReviewScore(i));
-            System.out.println("product " + b.getProductId(i));
-            System.out.println("num " + b.getReviewHelpfulnessNumerator(i));
-            System.out.println("denum " + b.getReviewHelpfulnessDenominator(i));
-            System.out.println("len " + b.getReviewLength(i));
-//            System.out.println("h_num " + b.getReviewHelpfulnessNumerator(i));
-            System.out.println("**********************");
-        }
-
-        // general data
-        System.out.println("number of tokens with repetitions: " + b.getTokenSizeOfReviews());
-        System.out.println("number of reviews: " + b.getNumberOfReviews());
-        // review data
-        printReviewData(b, 3);
-        // product data
-        printProductData(b, "B00813GRG4");
-        printProductData(b, "B006F2NYI2");
-        // token data
-        printTokenData(b, "0"); // token 1
-        printTokenData(b, "00"); // token 2
-        printTokenData(b, "1");
-        printTokenData(b, "10");
-        printTokenData(b, "100");
-        printTokenData(b, "10lbs");
-        printTokenData(b, "1300watt");
-        printTokenData(b, "16");
-        printTokenData(b, "1845");
-
-        printTokenData(b, "000"); // token 3
-        printTokenData(b, "000kwh"); // token 4
-        printTokenData(b, "042608460503"); // token 5
-        printTokenData(b, "0472066978"); // token 6
-        printTokenData(b, "0738551856"); // token 7
-        printTokenData(b, "09"); // token 8
-        printTokenData(b, "0g"); // token 9
-        printTokenData(b, "a");
-        printTokenData(b, "the");
-        printTokenData(b, "zucchini"); // appears only in the 1000 file, last among tokens
-        printTokenData(b, "zola"); // appears only in the 1000 file, second-last among tokens
-        printTokenData(b, "affection"); // appears only in the 1000 file, first among tokens
-        printTokenData(b, "africafe"); // appears only in the 1000 file, second among tokens
-        printTokenData(b, "suckered"); // appears once in file 999
-        printTokenData(b, "peanuts");
-        printTokenData(b, "confectionery");
-        printTokenData(b, "around");
-
-        a.removeIndex("test");
+//        // general data
+//        System.out.println("number of tokens with repetitions: " + b.getTokenSizeOfReviews());
+//        System.out.println("number of reviews: " + b.getNumberOfReviews());
+//        // review data
+//        printReviewData(b, 3);
+//        // product data
+//        printProductData(b, "B00813GRG4");
+//        printProductData(b, "B006F2NYI2");
+//        // token data
+//        printTokenData(b, "0"); // token 1
+//        printTokenData(b, "00"); // token 2
+//        printTokenData(b, "1");
+//        printTokenData(b, "10");
+//        printTokenData(b, "100");
+//        printTokenData(b, "10lbs");
+//        printTokenData(b, "1300watt");
+//        printTokenData(b, "16");
+//        printTokenData(b, "1845");
+//
+//        printTokenData(b, "000"); // token 3
+//        printTokenData(b, "000kwh"); // token 4
+//        printTokenData(b, "042608460503"); // token 5
+//        printTokenData(b, "0472066978"); // token 6
+//        printTokenData(b, "0738551856"); // token 7
+//        printTokenData(b, "09"); // token 8
+//        printTokenData(b, "0g"); // token 9
+//        printTokenData(b, "a");
+//        printTokenData(b, "the");
+//        printTokenData(b, "zucchini"); // appears only in the 1000 file, last among tokens
+//        printTokenData(b, "zola"); // appears only in the 1000 file, second-last among tokens
+//        printTokenData(b, "affection"); // appears only in the 1000 file, first among tokens
+//        printTokenData(b, "africafe"); // appears only in the 1000 file, second among tokens
+//        printTokenData(b, "suckered"); // appears once in file 999
+//        printTokenData(b, "peanuts");
+//        printTokenData(b, "confectionery");
+//        printTokenData(b, "around");
+//
+//        a.removeIndex("test");
 
 //        checkReviews100 ();
 //        checkProduct100 ();

@@ -106,7 +106,7 @@ public class IndexWriter {
                         String[] arrOfStr = line.split(": ", 2);
                         curProductId = arrOfStr[1];
                         numReview += 1;
-                        System.out.println(numReview);
+//                        System.out.println(numReview);
                         if (!last_product_id.equals(curProductId)){
                             last_product_id = curProductId;
                             if (!products.isEmpty()){
