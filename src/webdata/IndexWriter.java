@@ -106,6 +106,7 @@ public class IndexWriter {
                         String[] arrOfStr = line.split(": ", 2);
                         curProductId = arrOfStr[1];
                         numReview += 1;
+                        System.out.println(numReview);
                         if (!last_product_id.equals(curProductId)){
                             last_product_id = curProductId;
                             if (!products.isEmpty()){
@@ -168,7 +169,12 @@ public class IndexWriter {
             directory.mkdir();
         }
         FileSaver saver = new FileSaver(dir);
+        long start = System.currentTimeMillis();
         first_read(inputFile, saver);
+        long end = System.currentTimeMillis();
+        long elapsedTime1 = end - start;
+        System.out.println("first read end");
+        System.out.println(elapsedTime1);
         second_read(inputFile, saver);
     }
 
@@ -179,6 +185,7 @@ public class IndexWriter {
     public void removeIndex(String dir) {
         File directoryToBeDeleted = new File(dir);
         this.deleteDirectory(directoryToBeDeleted);
+        directoryToBeDeleted.delete();
     }
 
     private boolean deleteDirectory(File directoryToBeDeleted) {
