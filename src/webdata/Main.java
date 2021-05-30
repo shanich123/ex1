@@ -1,10 +1,5 @@
 package webdata;
-import java.io.*;
-import java.io.FileReader;
-import java.nio.ByteBuffer;
 import java.util.*;
-import java.io.FileOutputStream;
-import java.util.Random;
 
 public class Main {
 
@@ -107,7 +102,9 @@ public class Main {
     public static void main(String[] args) {
 
         IndexWriter a = new IndexWriter();
-        a.write("ex1_test.txt", "test");
+        //a.write("100.txt", "test");
+        //a.write("ex1_test.txt", "test");
+        a.write("1000.txt", "test");
         IndexReader b = new IndexReader("test");
 
         for (int i = 1; i < 10 ; i++) {
@@ -130,10 +127,16 @@ public class Main {
         printProductData(b, "B00813GRG4");
         printProductData(b, "B006F2NYI2");
         // token data
-        printTokenData(b, "a");
-        printTokenData(b, "the");
         printTokenData(b, "0"); // token 1
         printTokenData(b, "00"); // token 2
+        printTokenData(b, "1");
+        printTokenData(b, "10");
+        printTokenData(b, "100");
+        printTokenData(b, "10lbs");
+        printTokenData(b, "1300watt");
+        printTokenData(b, "16");
+        printTokenData(b, "1845");
+
         printTokenData(b, "000"); // token 3
         printTokenData(b, "000kwh"); // token 4
         printTokenData(b, "042608460503"); // token 5
@@ -141,6 +144,8 @@ public class Main {
         printTokenData(b, "0738551856"); // token 7
         printTokenData(b, "09"); // token 8
         printTokenData(b, "0g"); // token 9
+        printTokenData(b, "a");
+        printTokenData(b, "the");
         printTokenData(b, "zucchini"); // appears only in the 1000 file, last among tokens
         printTokenData(b, "zola"); // appears only in the 1000 file, second-last among tokens
         printTokenData(b, "affection"); // appears only in the 1000 file, first among tokens

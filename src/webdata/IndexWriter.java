@@ -34,6 +34,7 @@ public class IndexWriter {
         try {
             FileReader fr = new FileReader(file);
             BufferedReader br = new BufferedReader(fr);
+            saver.openReviewProductFile();
             saver.openTokenReviewFile();
             while ((line = br.readLine()) != null) {
                 if (! line.isEmpty()) {
@@ -72,6 +73,7 @@ public class IndexWriter {
                 }
             }
             fr.close();    //closes the stream and release the resources
+            saver.closeReviewProductFile();
             saver.closeTokenReviewFile();
             saver.orderTokenReview();
             saver.writeTokensNew(tokenSet);
@@ -135,6 +137,10 @@ public class IndexWriter {
             curP.setLastReviewId(numReview);
 
             Collections.sort(this.tokenSet);
+            /**
+            for (int i=24; i<30; i++) {
+                System.out.println(tokenSet.get(i));
+            }*/
             Collections.sort(products);
             Collections.sort(this.productsSet);
 

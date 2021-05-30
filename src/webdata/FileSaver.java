@@ -3,7 +3,6 @@ import java.io.*;
 import java.util.*;
 import java.nio.ByteBuffer;
 import java.lang.Math;
-import java.lang.instrument.Instrumentation;
 
 public class FileSaver {
 
@@ -17,6 +16,7 @@ public class FileSaver {
             curPairsInMemory, numBlocksInLastSequence;
     private int numPairsInBlock, numPairsInLastBlock, spareBytesInBlock, sizeOfRawPair, numBlocksInDisk, numPairsInDisk;
     private ArrayList<TokenReview> pairs;
+    private boolean ordered_file, need_merge;
 
     private String dir;
 
@@ -27,22 +27,37 @@ public class FileSaver {
     public static String GENERAL = "/general_data";
     public static String TOKENS = "/token_dict";
     public static String TOKEN_REVIEW = "/token_review";
-    public static String TOKEN_REVIEW_ORDERED = "/token_review_ordered";
+    public static String TOKEN_REVIEW_ORDERED_1 = "/token_review_ordered_1";
+    public static String TOKEN_REVIEW_ORDERED_2 = "/token_review_ordered_2";
 
     public static int BLOCK = 512;
 
-    private static Instrumentation instrumentation;
+    private byte[] token_review_block, concatenated_list_block, inverted_list_block;
+    private int offset_in_token_review_block, offset_in_concatenated_list_block, offset_in_inverted_list_block;
 
     public FileSaver(String dir){
         this.dir = dir;
         this.byte_amount = new ByteAmount();
+        ordered_file = true;
+        need_merge = true;
+        try {
+            this.general_data = new BufferedOutputStream(new FileOutputStream(dir + GENERAL));
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        token_review_block = new byte[BLOCK];
+        concatenated_list_block = new byte[BLOCK];
+        inverted_list_block = new byte[BLOCK];
+        offset_in_token_review_block = BLOCK;
+        offset_in_concatenated_list_block = BLOCK;
+        offset_in_inverted_list_block = BLOCK;
     }
 
     // writes general information to the general_data file, including number of bytes that are required for
     // storing different parts of the data, and the number of tokens and products.
-    public void writeByteAmountAndMore (){
+    public void writeByteAmountAndMore () {
         try {
-            this.general_data = new BufferedOutputStream(new FileOutputStream(dir+GENERAL));
             this.general_data.write(generalFunctions.integerToBytes(this.byte_amount.getPerFrequency(), 4));
             this.general_data.write(generalFunctions.integerToBytes(this.byte_amount.getPerCollectionFrequency(), 4));
             this.general_data.write(generalFunctions.integerToBytes(this.byte_amount.getPerConcatenatedPtr(), 4));
@@ -51,7 +66,7 @@ public class FileSaver {
             this.general_data.write(generalFunctions.integerToBytes(this.byte_amount.getPerProductID(), 4));
             this.general_data.write(generalFunctions.integerToBytes(this.numOfProducts, 4));
             this.general_data.write(generalFunctions.integerToBytes(this.numOfTokens, 4));
-            general_data.close();
+            this.general_data.close();
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -72,6 +87,25 @@ public class FileSaver {
         }
     }
 
+
+    public void openReviewProductFile(){
+        try {
+            this.review_product = new BufferedOutputStream(new FileOutputStream(dir+REVIEW_PRODUCT));
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void closeReviewProductFile(){
+        try {
+            this.review_product.close();
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
     public void openTokenReviewFile(){
         try {
             this.token_review_out = new BufferedOutputStream(new FileOutputStream(dir+TOKEN_REVIEW));
@@ -83,13 +117,19 @@ public class FileSaver {
         this.numPairsInBlock = Math.floorDiv(BLOCK, sizeOfRawPair);
         this.spareBytesInBlock = BLOCK % sizeOfRawPair;
         this.numBlocksInMemory = Math.floorDiv(Runtime.getRuntime().freeMemory() - 10000, BLOCK);
-        int bytesPerPair = (int) instrumentation.getObjectSize(new TokenReview(2000000000, 2000000000));
-        //this.numPairsInBlock = Math.floorDiv(BLOCK, bytesPerPair);
-        //this.numBytesInBlockInDisk = numPairsInBlock * sizeOfRawPair;
-        //this.numPairsInMemory = numBlocksInMemory * numPairsInBlock;
+        int bytesPerPair = 24; // 16 bytes for header, 2*4 bytes for the 2 integer fields.
+        if (System.getProperty("sun.arch.data.model").equals("32")) { // only 8 bytes for header.
+            bytesPerPair -= 8;
+        }
+        /**
+         int bytesPerPair = (int) instrumentation.getObjectSize(new TokenReview(2000000000, 2000000000));
+         this.numPairsInBlock = Math.floorDiv(BLOCK, bytesPerPair);
+         this.numBytesInBlockInDisk = numPairsInBlock * sizeOfRawPair;
+         this.numPairsInMemory = numBlocksInMemory * numPairsInBlock;
+         this.numBlocksInSequence = numBlocksInMemory;
+         */
         int max_pair_objects_in_memory = (int) Math.floorDiv(Runtime.getRuntime().freeMemory() - 10000, bytesPerPair);
         this.numPairsInFirstRoundSequence = max_pair_objects_in_memory - (max_pair_objects_in_memory % numPairsInBlock);
-        //this.numBlocksInSequence = numBlocksInMemory;
         this.numBlocksInSequence = numPairsInFirstRoundSequence / numPairsInBlock;
         this.numSequencesInDisk = 0;
         this.numBlocksInDisk = 0;
@@ -125,7 +165,7 @@ public class FileSaver {
             generalFunctions.integerToBytesInPlace(pair.getToken(), toWrite, offset, this.byte_amount.getPerTokenNum());
             generalFunctions.integerToBytesInPlace(pair.getReview(), toWrite, offset + this.byte_amount.getPerTokenNum(), this.byte_amount.getPerFrequency());
             offset += sizeOfRawPair;
-            if ((i+1) == numPairsInBlock) {
+            if ((i+1) % numPairsInBlock == 0) {
                 try {
                     file.write(toWrite);
                 }
@@ -210,6 +250,19 @@ public class FileSaver {
         int len = a.length;
         for (int i=0; i<len; i++) {
             if ((cmp = Byte.compare(a[i], b[i])) != 0) {
+                return cmp;
+            }
+        }
+        return 0;
+    }
+
+    // Assumes a.length = b.length.
+    // Returns: 0 if ‘a is equal to ‘b, a positive value if ‘a’ is greater than ‘b’,
+    // a negative value if ‘b’ is greater than ‘a’
+    public int compByteArrays(byte[] a, byte[] b, int a_start, int a_end) {
+        int cmp;
+        for (int i=0; i<(a_end-a_start); i++) {
+            if ((cmp = Byte.compare(a[a_start+i], b[i])) != 0) {
                 return cmp;
             }
         }
@@ -344,20 +397,39 @@ public class FileSaver {
         return num_of_merges;
     }
 
+    public String orderedFileString(boolean isFirst) {
+        if (isFirst) {
+            return dir + TOKEN_REVIEW_ORDERED_1;
+        }
+        return dir + TOKEN_REVIEW_ORDERED_2;
+    }
+
     public void orderTokenReview() {
         try {
             this.token_review_in = new RandomAccessFile(dir + TOKEN_REVIEW, "r");
-            this.token_review_ordered_out = new BufferedOutputStream(new FileOutputStream(dir + TOKEN_REVIEW_ORDERED));
+            this.token_review_ordered_out = new BufferedOutputStream(new FileOutputStream(orderedFileString(ordered_file)));
+            if (numSequencesInDisk == 1) {
+                need_merge = false;
+                System.out.println("no merging needed");
+                System.out.println(numSequencesInDisk);
+            }
             while (numSequencesInDisk > 1) {
+                System.out.println("merge round");
+                System.out.println(numSequencesInDisk);
                 numSequencesInDisk = mergeRound();
                 numBlocksInSequence *= (numBlocksInMemory - 1);
                 numBlocksInLastSequence = numBlocksInDisk % numBlocksInSequence;
                 if (numBlocksInLastSequence == 0) {
                     numBlocksInLastSequence = numBlocksInSequence;
                 }
+                token_review_in.close();
+                token_review_ordered_out.close();
+                if (numSequencesInDisk > 1) {
+                    ordered_file = !ordered_file;
+                    this.token_review_in = new RandomAccessFile(orderedFileString(!ordered_file), "r");
+                    this.token_review_ordered_out = new BufferedOutputStream(new FileOutputStream(orderedFileString(ordered_file)));
+                }
             }
-            token_review_in.close();
-            token_review_ordered_out.close();
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -392,8 +464,7 @@ public class FileSaver {
 
     public void saveAllReviews (ArrayList<Review> allReviews){
         try {
-            FileOutputStream review_product_file = new FileOutputStream(dir+REVIEW_PRODUCT);
-            this.review_product = new BufferedOutputStream(review_product_file);
+            this.review_product = new BufferedOutputStream(new FileOutputStream(dir+REVIEW_PRODUCT));
             for (int i = 0; i <= allReviews.size() - 1; i++) {
                 Review cur = allReviews.get(i);
                 saveReview(cur.getScore(), cur.getHelpfulnessNumerator(), cur.getHelpfulnessDenominator(),
@@ -445,11 +516,8 @@ public class FileSaver {
         byte [] sizeBytes = ByteBuffer.allocate(4).putInt(tokenSizeOfReviews).array();
         byte [] numBytes = ByteBuffer.allocate(4).putInt(numberOfReviews).array();
         try{
-            FileOutputStream general_data_file = new FileOutputStream(dir+GENERAL);
-            this.general_data = new BufferedOutputStream(general_data_file);
             this.general_data.write(sizeBytes,0,4);
             this.general_data.write(numBytes,0,4);
-            general_data.close();
         }
         catch (IOException e){
             e.printStackTrace();
@@ -611,27 +679,25 @@ public class FileSaver {
         }
     }
 
-//==========================================================================
-
-    private LinkedHashMap<Integer, Integer> readNextTokenReviews(int token_num){
-        byte[] bytes = new byte[4];
+    private LinkedHashMap<Integer, Integer> readNextTokenReviews(int given_token){
         LinkedHashMap<Integer, Integer> frequencies = new LinkedHashMap<>();
-        int token = token_num;
         int file_index;
-        try{
-            if (token == 0) { //first token number is only read in the first time
-                token_review_ordered_in.read(bytes,0,4);
+        byte[] givenTokenB = generalFunctions.integerToBytes(given_token, byte_amount.getPerTokenNum());
+        while(true) {
+            if (BLOCK - offset_in_token_review_block < sizeOfRawPair) {
+                try {
+                    token_review_ordered_in.read(token_review_block, 0, BLOCK);
+                    offset_in_token_review_block = 0;
+                } catch (IOException e) {
+                    return null;
+                }
             }
-            while (token == token_num) {
-                token_review_ordered_in.read(bytes,0,4);
-                file_index = generalFunctions.byteToInt(bytes, 4);
-                frequencies.put(file_index, frequencies.containsKey(file_index) ? frequencies.get(file_index)+1 : 1);
-                token_review_ordered_in.read(bytes,0,4);
-                token = generalFunctions.byteToInt(bytes, 4);
+            if (compByteArrays(token_review_block, givenTokenB, offset_in_token_review_block, offset_in_token_review_block + byte_amount.getPerTokenNum()) != 0) {
+                break;
             }
-        }
-        catch (IOException e){
-            return null;
+            file_index = generalFunctions.byteToInt(token_review_block, offset_in_token_review_block + byte_amount.getPerTokenNum(), byte_amount.getPerFrequency());
+            frequencies.put(file_index, frequencies.containsKey(file_index) ? frequencies.get(file_index)+1 : 1);
+            offset_in_token_review_block += sizeOfRawPair;
         }
         return frequencies;
     }
@@ -685,14 +751,13 @@ public class FileSaver {
         // and pointer to inverted-index file.
         int concatenated_list_cursor = 0;
         int inverted_list_cursor = 0;
-        int pref, substr_len, freq;
-        int collection_freq = 0;
+        int pref, substr_len, freq, collection_freq, inverted_bytes;
         int bytes_for_first_token = bytes_per_frequency + bytes_per_collection_frequency + bytes_per_concatenated_ptr + 1 + bytes_per_inverted_ptr;
         int bytes_for_last_token = bytes_per_frequency + bytes_per_collection_frequency + 1 + bytes_per_inverted_ptr;
         int bytes_for_middle_token = bytes_per_frequency + bytes_per_collection_frequency + 1 + 1 + bytes_per_inverted_ptr;
-        int num_of_whole_eights = Math.floorDiv(tokens.size(), 8);
         int bytes_for_a_whole_eight = bytes_for_first_token + 6 * bytes_for_middle_token + bytes_for_last_token;
         /**
+         int num_of_whole_eights = Math.floorDiv(tokens.size(), 8);
          int num_of_spare_tokens = tokens.size() % 8;
          int bytes_for_whole_dict = num_of_whole_eights * bytes_for_a_whole_eight;
         if (num_of_spare_tokens > 0) {
@@ -707,9 +772,18 @@ public class FileSaver {
         try {
             this.inverted_index = new BufferedOutputStream(new FileOutputStream(this.dir+INVERTED));
             this.concatenated_list = new BufferedOutputStream(new FileOutputStream(this.dir+CONCATENATED));
-            this.token_review_ordered_in = new BufferedInputStream(new FileInputStream(dir+TOKEN_REVIEW_ORDERED));
+            if (need_merge) {
+                this.token_review_ordered_in = new BufferedInputStream(new FileInputStream(orderedFileString(ordered_file)));
+            }
+            else {
+                this.token_review_ordered_in = new BufferedInputStream(new FileInputStream(dir + TOKEN_REVIEW));
+            }
             this.token_dict = new BufferedOutputStream(new FileOutputStream(dir+TOKENS));
+            //int test_cumulative_collection_frequency = 0;
             for (int i = 1; i <= tokens.size(); i++) {
+                //System.out.println(i);
+                // boolean toPrint = (i<28);
+
                 // saves the token in the concatenated_list, updates the inverted_index, and for each token - saves
                 // pointers to those files, and saves size of common prefix with the previous token and some more
                 // details.
@@ -722,33 +796,38 @@ public class FileSaver {
                 }
                 LinkedHashMap<Integer, Integer> frequencies = readNextTokenReviews(i-1);
                 substr_len = this.writeToConcatenatedListNew(token, pref);
-                concatenated_list_cursor += substr_len;
-                inverted_list_cursor += this.writeInvertedListNew(frequencies);
+                inverted_bytes = this.writeInvertedListNew(frequencies);
                 freq = frequencies.size();
+                collection_freq = 0;
                 for (Integer file_freq : frequencies.values()) {
                     collection_freq += file_freq;
                 }
-                collection_freq = 0;
                 // writes token details to the token dictionary
-                generalFunctions.integerToBytesInPlace(freq, toWrite, offset, bytes_per_frequency);
-                generalFunctions.integerToBytesInPlace(collection_freq, toWrite, offset + bytes_per_frequency, bytes_per_collection_frequency);
+                /**if (toPrint) {
+                    System.out.println("token: "+token);
+                    test_cumulative_collection_frequency += collection_freq;
+                    System.out.println(test_cumulative_collection_frequency);
+                    for (Map.Entry<Integer,Integer> entry : frequencies.entrySet()) {
+                        System.out.println(entry.getKey());
+                        System.out.println(entry.getValue());
+                    }
+                }*/
+                offset = generalFunctions.integerToBytesInPlace(freq, toWrite, offset, bytes_per_frequency);
+                offset = generalFunctions.integerToBytesInPlace(collection_freq, toWrite, offset, bytes_per_collection_frequency);
                 if (i % 8 == 1) {
-                    generalFunctions.integerToBytesInPlace(concatenated_list_cursor, toWrite, offset + bytes_per_frequency + bytes_per_collection_frequency, bytes_per_concatenated_ptr);
-                    generalFunctions.integerToBytesInPlace(substr_len, toWrite, offset + bytes_per_frequency + bytes_per_collection_frequency + bytes_per_concatenated_ptr, 1);
-                    generalFunctions.integerToBytesInPlace(inverted_list_cursor, toWrite, offset + bytes_per_frequency + bytes_per_collection_frequency + bytes_per_concatenated_ptr + 1, bytes_per_inverted_ptr);
-                    offset += bytes_for_first_token;
+                    offset = generalFunctions.integerToBytesInPlace(concatenated_list_cursor, toWrite, offset, bytes_per_concatenated_ptr);
+                    offset = generalFunctions.integerToBytesInPlace(substr_len, toWrite, offset, 1);
                 }
                 if (i % 8 == 0) {
-                    generalFunctions.integerToBytesInPlace(pref, toWrite, offset + bytes_per_frequency + bytes_per_collection_frequency, 1);
-                    generalFunctions.integerToBytesInPlace(inverted_list_cursor, toWrite, offset + bytes_per_frequency + bytes_per_collection_frequency + 1, bytes_per_inverted_ptr);
-                    offset += bytes_for_last_token;
+                    offset = generalFunctions.integerToBytesInPlace(pref, toWrite, offset, 1);
                 }
                 if ((i % 8 != 0) & (i % 8 != 1)) {
-                    generalFunctions.integerToBytesInPlace(pref, toWrite, offset + bytes_per_frequency + bytes_per_collection_frequency, 1);
-                    generalFunctions.integerToBytesInPlace(substr_len, toWrite, offset + bytes_per_frequency + bytes_per_collection_frequency + 1, 1);
-                    generalFunctions.integerToBytesInPlace(inverted_list_cursor, toWrite, offset + bytes_per_frequency + bytes_per_collection_frequency + 2, bytes_per_inverted_ptr);
-                    offset += bytes_for_middle_token;
+                    offset = generalFunctions.integerToBytesInPlace(pref, toWrite, offset, 1);
+                    offset = generalFunctions.integerToBytesInPlace(substr_len, toWrite, offset, 1);
                 }
+                offset = generalFunctions.integerToBytesInPlace(inverted_list_cursor, toWrite, offset, bytes_per_inverted_ptr);
+                concatenated_list_cursor += substr_len;
+                inverted_list_cursor += inverted_bytes;
                 if (offset == size_of_writing_block) {
                     token_dict.write(toWrite);
                     offset = 0;
@@ -769,6 +848,20 @@ public class FileSaver {
             concatenated_list.close();
             token_review_ordered_in.close();
             token_dict.close();
+            /**
+            BufferedInputStream token_dict_file = new BufferedInputStream(new FileInputStream(dir+TOKENS));
+            byte[] test = new byte[100];
+            token_dict_file.read(test, 0, 100);
+            System.out.println(new String(test, StandardCharsets.UTF_8));
+            token_dict_file.close();
+             */
+            /** TEST CONCAT FILE
+            BufferedInputStream test_concat_file = new BufferedInputStream(new FileInputStream(dir+CONCATENATED));
+            byte[] test = new byte[100];
+            test_concat_file.read(test, 0, 100);
+            System.out.println(new String(test, StandardCharsets.UTF_8));
+            test_concat_file.close();
+             */
         }
         catch (IOException e) {
             e.printStackTrace();

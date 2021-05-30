@@ -21,6 +21,16 @@ public class generalFunctions {
         return val;
     }
 
+    public static int byteToInt(byte[] bytes, int offset, int length) {
+        int val = 0;
+        if(length>4) throw new RuntimeException("Too big to fit in int");
+        for (int i = 0; i < length; i++) {
+            val=val<<8;
+            val=val|(bytes[offset+i] & 0xFF);
+        }
+        return val;
+    }
+
     public static byte[] integerToBytes(int number, int num_of_bytes){
         if (num_of_bytes == 4){
             return new byte[] {
@@ -50,7 +60,7 @@ public class generalFunctions {
         }
     }
 
-    public static void integerToBytesInPlace(int number, byte[] res, int offset, int num_of_bytes){
+    public static int integerToBytesInPlace(int number, byte[] res, int offset, int num_of_bytes){
         if (num_of_bytes == 4){
             res[offset] = (byte)((number >> 24) & 0xff);
             res[offset+1] = (byte)((number >> 16) & 0xff);
@@ -69,5 +79,6 @@ public class generalFunctions {
         else{
             res[offset] = (byte)((number >> 0) & 0xff);
         }
+        return offset + num_of_bytes;
     }
 }

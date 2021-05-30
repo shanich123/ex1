@@ -110,7 +110,7 @@ public class IndexReader {
      * Returns null if there is no review with the given identifier
      */
     public String getProductId(int reviewId) {
-        int id = readReviewFile(reviewId, 1, (BYTESIZEREVIEW+
+        int id = readReviewFile(reviewId, byte_amount.getPerProductNum(), (BYTESIZEREVIEW+
                 this.byte_amount.getPerProductNum())*(reviewId-1)+5);
         if (id == -1){
             return null;
